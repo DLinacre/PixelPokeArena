@@ -1,0 +1,46 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platforms;android-33,build-tools;33.0.2
+
+      - name: Generate signing keystore (self-signed, for sideloading)
+        run: |
+          mkdir -p keystore
+          keytool -genkeypair -v -keystore keystore/release.keystore -alias arena \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass pixelarena -keypass pixelarena \
+            -dname "CN=PixelPoke Arena, OU=CI, O=Arena, C=GB"
+
+      - name: Build release APK
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PixelPokeArena-release
+          path: app/build/outputs/apk/release/app-release.apk

@@ -1,0 +1,19 @@
+# Android / Gradle
+.gradle/
+build/
+app/build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Signing keys (never commit)
+keystore/
+*.keystore
+*.jks
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+*.apk.idsig
